@@ -1,54 +1,50 @@
 import 'package:bulisa_dashboard/components/bordered_text_field.dart';
 import 'package:bulisa_dashboard/components/fill_button.dart';
 import 'package:bulisa_dashboard/components/pagination.dart';
+import 'package:bulisa_dashboard/components/table_place_holder.dart';
 import 'package:bulisa_dashboard/components/user_detail_pop_up.dart';
+import 'package:bulisa_dashboard/providers/user_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:intl/intl.dart';
 
-class UsersPage extends HookWidget {
+import '../hasura_config.dart';
+
+class UsersPage extends HookConsumerWidget {
   const UsersPage({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final _scrollController = useScrollController();
     final _totalShowData = useState(10);
     final _activePage = useState(0);
 
-    final _usersData = [
-      {
-        'id': 'lskfnklsfnlskdf',
-        'name': 'Gunawan Wibisono',
-        'email': 'email@email.com',
-        'phone_number': '082123456789',
-        'address': 'Jl. Cilaki No. 27',
-        'created_at': 'Thu, Jun 04 2021',
-      },
-      {
-        'id': 'lskfnklsfnlskdf',
-        'name': 'Gunawan Wibisono',
-        'email': 'email@email.com',
-        'phone_number': '082123456789',
-        'address': 'Jl. Cilaki No. 27',
-        'created_at': 'Thu, Jun 04 2021',
-      },
-      {
-        'id': 'lskfnklsfnlskdf',
-        'name': 'Gunawan Wibisono',
-        'email': 'email@email.com',
-        'phone_number': '082123456789',
-        'address': 'Jl. Cilaki No. 27',
-        'created_at': 'Thu, Jun 04 2021',
-      },
-    ];
+    final _usersData = useState<List<UserData>>(ref.read(userDataProvider));
+
+    final _isLoading = useState(false);
 
     final _showDetailUser = useMemoized(
-        () => (Map<String, Object> user) {
+        () => (UserData user) {
               showDialog(
                 context: context,
-                builder: (context) => DetailUserPopUP(),
+                builder: (context) => DetailUserPopUP(user.id),
               );
             },
         []);
+
+    useEffect(() {
+      _isLoading.value = true;
+      ref
+          .read(userDataProvider.notifier)
+          .getUserData(10, 0, ref.read(hasuraClientProvider).state)
+          .then((_) {
+        _isLoading.value = false;
+        _usersData.value = ref.read(userDataProvider);
+      });
+
+      return;
+    }, []);
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -108,12 +104,10 @@ class UsersPage extends HookWidget {
                                       Color(0xFF203288).withOpacity(0.05)),
                               columns: [
                                 DataColumn(
-                                  onSort: (columnIndex, ascending) {},
                                   label: Text('Id User'),
                                 ),
                                 DataColumn(
-                                  onSort: (columnIndex, ascending) {},
-                                  label: Text('Nama Pemesan'),
+                                  label: Text('Nama'),
                                 ),
                                 DataColumn(
                                   label: Text('Email'),
@@ -131,30 +125,30 @@ class UsersPage extends HookWidget {
                                   label: Text('Aksi'),
                                 ),
                               ],
-                              rows: _usersData
-                                  .map((user) => DataRow(cells: [
-                                        DataCell(
-                                          Text('${user['id']}'),
-                                        ),
-                                        DataCell(
-                                          Text('${user['name']}'),
-                                        ),
-                                        DataCell(
-                                          Text('${user['email']}'),
-                                        ),
-                                        DataCell(
-                                          Text('${user['phone_number']}'),
-                                        ),
-                                        DataCell(
-                                          Text('${user['address']}'),
-                                        ),
-                                        DataCell(
-                                          Text('${user['created_at']}'),
-                                        ),
-                                        DataCell(
-                                          Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
+                              rows: _isLoading.value
+                                  ? tablePlaceHolder(7)
+                                  : _usersData.value
+                                      .map((user) => DataRow(cells: [
+                                            DataCell(
+                                              Text('${user.id}'),
+                                            ),
+                                            DataCell(
+                                              Text('${user.name}'),
+                                            ),
+                                            DataCell(
+                                              Text('${user.email}'),
+                                            ),
+                                            DataCell(
+                                              Text('${user.phoneNumber}'),
+                                            ),
+                                            DataCell(
+                                              Text('${user.address}'),
+                                            ),
+                                            DataCell(
+                                              Text(
+                                                  '${DateFormat('dd MMMM yyyy').format(user.createdAt)}'),
+                                            ),
+                                            DataCell(
                                               SizedBox(
                                                 width: 34,
                                                 height: 34,
@@ -171,28 +165,9 @@ class UsersPage extends HookWidget {
                                                   },
                                                 ),
                                               ),
-                                              const SizedBox(
-                                                width: 10,
-                                              ),
-                                              SizedBox(
-                                                width: 34,
-                                                height: 34,
-                                                child: FillButton(
-                                                  child: Icon(
-                                                    Icons.delete,
-                                                    color:
-                                                        const Color(0xFFFE685E),
-                                                  ),
-                                                  color:
-                                                      const Color(0x26FE685E),
-                                                  onTap: () {},
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ]))
-                                  .toList(),
+                                            ),
+                                          ]))
+                                      .toList(),
                             ),
                           ),
                         ),

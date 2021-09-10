@@ -27,12 +27,6 @@ class MainPage extends HookWidget {
     final _isExpand = useState(false);
     final _activeTabIndex = useState(0);
 
-    final _goToDetailRoom = useMemoized(
-        () => (int index) {
-              _activeTabIndex.value = index;
-            },
-        []);
-
     final _tabs = [
       WorkInTab(
         title: 'Beranda',
