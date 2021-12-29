@@ -1,11 +1,14 @@
 import 'package:bulisa_dashboard/components/bordered_button.dart';
 import 'package:bulisa_dashboard/components/fill_button.dart';
 import 'package:bulisa_dashboard/components/tab_button.dart';
+import 'package:bulisa_dashboard/main.dart';
 import 'package:bulisa_dashboard/pages/home_page.dart';
 import 'package:bulisa_dashboard/pages/orders_page.dart';
 import 'package:bulisa_dashboard/pages/users_page.dart';
+import 'package:bulisa_dashboard/providers/auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class WorkInTab {
   final String title;
@@ -19,11 +22,11 @@ class WorkInTab {
   });
 }
 
-class MainPage extends HookWidget {
+class MainPage extends HookConsumerWidget {
   const MainPage({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final _isExpand = useState(false);
     final _activeTabIndex = useState(0);
 
@@ -61,7 +64,7 @@ class MainPage extends HookWidget {
         children: [
           AnimatedContainer(
             width: _isExpand.value ? 272 : 54,
-            color: const Color(0xFF203288),
+            color: const Color(0xFF539B9D),
             padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 27),
             duration: const Duration(milliseconds: 300),
             child: Column(
@@ -101,7 +104,7 @@ class MainPage extends HookWidget {
                               child: Padding(
                                 padding: const EdgeInsets.only(left: 12.0),
                                 child: Text(
-                                  'BuLiSa',
+                                  'Bulisa',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 18,
@@ -243,7 +246,18 @@ class MainPage extends HookWidget {
                                           text: 'Ya',
                                           color: const Color(0xFFFDC639),
                                           textColor: const Color(0xFFFDC639),
-                                          onTap: () {},
+                                          onTap: () {
+                                            ref
+                                                .read(authProvider.notifier)
+                                                .logout();
+
+                                            Navigator.pushAndRemoveUntil(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        AuthPage()),
+                                                (route) => false);
+                                          },
                                         ),
                                       ),
                                     ],
@@ -258,9 +272,7 @@ class MainPage extends HookWidget {
                   ),
                 ),
                 Expanded(
-                  child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      child: _tabs[_activeTabIndex.value].page),
+                  child: _tabs[_activeTabIndex.value].page,
                 ),
               ],
             ),

@@ -29,19 +29,22 @@ class TabButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(0),
             ),
           ),
+          padding: MaterialStateProperty.resolveWith(
+            (states) => const EdgeInsets.all(0),
+          ),
           backgroundColor: MaterialStateProperty.resolveWith((states) =>
               isActive ? const Color(0x40E6E3D8) : Colors.transparent),
         ),
         child: Container(
           height: 48,
           decoration: BoxDecoration(
-            border: Border(
-              left: BorderSide(
-                color: isActive ? const Color(0xFFFCCB3F) : Colors.transparent,
-                width: 2,
+              // border: Border(
+              //   left: BorderSide(
+              //     color: isActive ? const Color(0xFFFCCB3F) : Colors.transparent,
+              //     width: 2,
+              //   ),
+              // ),
               ),
-            ),
-          ),
           child: Row(
             children: [
               Padding(

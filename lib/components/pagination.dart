@@ -15,7 +15,7 @@ class Pagination extends HookWidget {
     return Row(
       children: [
         SizedBox(
-          width: 80,
+          width: 100,
           child: BorderedButton(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4.0),
@@ -71,11 +71,12 @@ class Pagination extends HookWidget {
           width: 8,
         ),
         SizedBox(
-          width: 84,
+          width: 100,
           child: BorderedButton(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4.0),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     'Next',

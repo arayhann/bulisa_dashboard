@@ -43,7 +43,7 @@ class TokenInterceptor extends Interceptor {
       return request;
     } else {
       try {
-        request.headers["Authorization"] = "Bearer $token";
+        request.headers["x-hasura-admin-secret"] = "$token";
         return request;
       } catch (e) {
         return null;

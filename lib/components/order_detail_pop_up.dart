@@ -210,7 +210,8 @@ class DetailOrderPopUP extends HookConsumerWidget {
                                   ),
                                   BorderedFormField(
                                     hint: 'Total Berat',
-                                    initialValue: _detailedOrder.value!.weight,
+                                    initialValue:
+                                        _detailedOrder.value!.weight.toString(),
                                     onSaved: (value) {
                                       _orderData.value['weight'] = value;
                                     },

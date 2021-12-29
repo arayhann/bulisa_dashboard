@@ -1,17 +1,16 @@
-import 'package:bulisa_dashboard/components/bordered_text_field.dart';
 import 'package:bulisa_dashboard/components/create_order_pop_up.dart';
 import 'package:bulisa_dashboard/components/delete_pop_up.dart';
 import 'package:bulisa_dashboard/components/fill_button.dart';
 import 'package:bulisa_dashboard/components/filter_order_pop_up.dart';
 import 'package:bulisa_dashboard/components/order_detail_pop_up.dart';
 import 'package:bulisa_dashboard/components/pagination.dart';
-import 'package:bulisa_dashboard/components/table_place_holder.dart';
 import 'package:bulisa_dashboard/hasura_config.dart';
 import 'package:bulisa_dashboard/providers/order.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 
 class OrdersPage extends HookConsumerWidget {
   const OrdersPage({Key? key}) : super(key: key);
@@ -24,7 +23,7 @@ class OrdersPage extends HookConsumerWidget {
 
     final _orderData = useState<List<Order>>(ref.read(orderProvider));
 
-    final _isLoading = useState(false);
+    final _isLoading = useState(true);
 
     final _showDetailOrder = useMemoized(
         () => (Order order) async {
@@ -77,13 +76,15 @@ class OrdersPage extends HookConsumerWidget {
         []);
 
     useEffect(() {
-      _isLoading.value = true;
-      ref
-          .read(orderProvider.notifier)
-          .getOrders(10, 0, ref.read(hasuraClientProvider).state)
-          .then((_) {
-        _isLoading.value = false;
-        _orderData.value = ref.read(orderProvider);
+      Future.delayed(Duration.zero).then((_) {
+        _isLoading.value = true;
+        ref
+            .read(orderProvider.notifier)
+            .getOrders(10, 0, ref.read(hasuraClientProvider).state)
+            .then((_) {
+          _isLoading.value = false;
+          _orderData.value = ref.read(orderProvider);
+        });
       });
 
       return;
@@ -105,17 +106,6 @@ class OrdersPage extends HookConsumerWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          SizedBox(
-                            width: 138,
-                            child: FillButton(
-                              onTap: _createNewOrder,
-                              text: 'Tambah',
-                              leading: Icon(
-                                Icons.add_box_rounded,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
                           SizedBox(
                             width: 186,
                             child: FillButton(
@@ -176,24 +166,42 @@ class OrdersPage extends HookConsumerWidget {
                                 ),
                               ],
                               rows: _isLoading.value
-                                  ? tablePlaceHolder(7)
+                                  ? tablePlaceHolder()
                                   : _orderData.value
                                       .map((order) => DataRow(cells: [
                                             DataCell(
-                                              Text('${order.orderName}'),
-                                            ),
-                                            DataCell(
-                                              Text('${order.weight}'),
-                                            ),
-                                            DataCell(
-                                              Text('${order.address}'),
-                                            ),
-                                            DataCell(
-                                              Text('${order.method}'),
+                                              Text(
+                                                '${order.orderName}',
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
                                             ),
                                             DataCell(
                                               Text(
-                                                  '${DateFormat('dd MMMM yyyy').format(order.createdAt)}'),
+                                                '${order.weight}',
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            DataCell(
+                                              SizedBox(
+                                                width: 300,
+                                                child: Text(
+                                                  '${order.address}',
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ),
+                                            DataCell(
+                                              Text(
+                                                '${order.method}',
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            DataCell(
+                                              Text(
+                                                '${DateFormat('dd MMMM yyyy').format(order.createdAt)}',
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
                                             ),
                                             DataCell(
                                               Container(
@@ -242,25 +250,25 @@ class OrdersPage extends HookConsumerWidget {
                                                               order),
                                                     ),
                                                   ),
-                                                  const SizedBox(
-                                                    width: 10,
-                                                  ),
-                                                  SizedBox(
-                                                    width: 34,
-                                                    height: 34,
-                                                    child: FillButton(
-                                                      child: Icon(
-                                                        Icons.delete,
-                                                        color: const Color(
-                                                            0xFFFE685E),
-                                                      ),
-                                                      color: const Color(
-                                                          0x26FE685E),
-                                                      onTap: () =>
-                                                          _deleteOrderPopUp(
-                                                              order.id),
-                                                    ),
-                                                  ),
+                                                  // const SizedBox(
+                                                  //   width: 10,
+                                                  // ),
+                                                  // SizedBox(
+                                                  //   width: 34,
+                                                  //   height: 34,
+                                                  //   child: FillButton(
+                                                  //     child: Icon(
+                                                  //       Icons.delete,
+                                                  //       color: const Color(
+                                                  //           0xFFFE685E),
+                                                  //     ),
+                                                  //     color: const Color(
+                                                  //         0x26FE685E),
+                                                  //     onTap: () =>
+                                                  //         _deleteOrderPopUp(
+                                                  //             order.id),
+                                                  //   ),
+                                                  // ),
                                                 ],
                                               ),
                                             ),
@@ -271,81 +279,81 @@ class OrdersPage extends HookConsumerWidget {
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                'Menampilkan',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Color(0xFF353C48),
-                                ),
-                              ),
-                              const SizedBox(
-                                width: 12,
-                              ),
-                              SizedBox(
-                                height: 36,
-                                child: Card(
-                                  elevation: 5,
-                                  shadowColor: Colors.grey.withOpacity(0.4),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0),
-                                    child: DropdownButton<int>(
-                                      value: _totalShowData.value,
-                                      icon: const Icon(
-                                          Icons.arrow_drop_down_outlined),
-                                      iconSize: 24,
-                                      elevation: 16,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Color(0xFF353C48),
-                                      ),
-                                      underline: SizedBox.shrink(),
-                                      onChanged: (int? newValue) {
-                                        if (newValue != null) {
-                                          _totalShowData.value = newValue;
-                                        }
-                                      },
-                                      items: <int>[
-                                        5,
-                                        10,
-                                        15,
-                                        20
-                                      ].map<DropdownMenuItem<int>>((int value) {
-                                        return DropdownMenuItem<int>(
-                                          value: value,
-                                          child: Text('$value'),
-                                        );
-                                      }).toList(),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(
-                                width: 12,
-                              ),
-                              Text(
-                                'Dari 50 baris',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Color(0xFF353C48),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Pagination(
-                            activePage: _activePage,
-                            totalPage: 7,
-                          ),
-                        ],
-                      ),
-                    ),
+                    // Padding(
+                    //   padding: const EdgeInsets.all(20.0),
+                    //   child: Row(
+                    //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    //     children: [
+                    //       Row(
+                    //         children: [
+                    //           Text(
+                    //             'Menampilkan',
+                    //             style: TextStyle(
+                    //               fontSize: 12,
+                    //               color: Color(0xFF353C48),
+                    //             ),
+                    //           ),
+                    //           const SizedBox(
+                    //             width: 12,
+                    //           ),
+                    //           SizedBox(
+                    //             height: 36,
+                    //             child: Card(
+                    //               elevation: 5,
+                    //               shadowColor: Colors.grey.withOpacity(0.4),
+                    //               child: Padding(
+                    //                 padding: const EdgeInsets.symmetric(
+                    //                     horizontal: 8.0),
+                    //                 child: DropdownButton<int>(
+                    //                   value: _totalShowData.value,
+                    //                   icon: const Icon(
+                    //                       Icons.arrow_drop_down_outlined),
+                    //                   iconSize: 24,
+                    //                   elevation: 16,
+                    //                   style: TextStyle(
+                    //                     fontSize: 12,
+                    //                     color: Color(0xFF353C48),
+                    //                   ),
+                    //                   underline: SizedBox.shrink(),
+                    //                   onChanged: (int? newValue) {
+                    //                     if (newValue != null) {
+                    //                       _totalShowData.value = newValue;
+                    //                     }
+                    //                   },
+                    //                   items: <int>[
+                    //                     5,
+                    //                     10,
+                    //                     15,
+                    //                     20
+                    //                   ].map<DropdownMenuItem<int>>((int value) {
+                    //                     return DropdownMenuItem<int>(
+                    //                       value: value,
+                    //                       child: Text('$value'),
+                    //                     );
+                    //                   }).toList(),
+                    //                 ),
+                    //               ),
+                    //             ),
+                    //           ),
+                    //           const SizedBox(
+                    //             width: 12,
+                    //           ),
+                    //           Text(
+                    //             'Dari 50 baris',
+                    //             style: TextStyle(
+                    //               fontSize: 12,
+                    //               color: Color(0xFF353C48),
+                    //             ),
+                    //           ),
+                    //         ],
+                    //       ),
+                    //       Pagination(
+                    //         activePage: _activePage,
+                    //         totalPage: 7,
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ),
                   ],
                 ),
               ),
@@ -358,5 +366,310 @@ class OrdersPage extends HookConsumerWidget {
         ),
       ),
     );
+  }
+
+  List<DataRow> tablePlaceHolder() {
+    return [
+      DataRow(cells: [
+        DataCell(
+          Shimmer.fromColors(
+            baseColor: const Color(0xFFE3E7EA),
+            highlightColor: const Color(0xFFF5F5F5),
+            child: Container(
+              width: 80,
+              height: 16,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: Color(0xFFE3E7EA),
+              ),
+            ),
+          ),
+        ),
+        DataCell(
+          Shimmer.fromColors(
+            baseColor: const Color(0xFFE3E7EA),
+            highlightColor: const Color(0xFFF5F5F5),
+            child: Container(
+              width: 80,
+              height: 16,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: Color(0xFFE3E7EA),
+              ),
+            ),
+          ),
+        ),
+        DataCell(
+          Shimmer.fromColors(
+            baseColor: const Color(0xFFE3E7EA),
+            highlightColor: const Color(0xFFF5F5F5),
+            child: Container(
+              width: 80,
+              height: 16,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: Color(0xFFE3E7EA),
+              ),
+            ),
+          ),
+        ),
+        DataCell(
+          Shimmer.fromColors(
+            baseColor: const Color(0xFFE3E7EA),
+            highlightColor: const Color(0xFFF5F5F5),
+            child: Container(
+              width: 80,
+              height: 16,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: Color(0xFFE3E7EA),
+              ),
+            ),
+          ),
+        ),
+        DataCell(
+          Shimmer.fromColors(
+            baseColor: const Color(0xFFE3E7EA),
+            highlightColor: const Color(0xFFF5F5F5),
+            child: Container(
+              width: 80,
+              height: 16,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: Color(0xFFE3E7EA),
+              ),
+            ),
+          ),
+        ),
+        DataCell(
+          Shimmer.fromColors(
+            baseColor: const Color(0xFFE3E7EA),
+            highlightColor: const Color(0xFFF5F5F5),
+            child: Container(
+              width: 80,
+              height: 16,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: Color(0xFFE3E7EA),
+              ),
+            ),
+          ),
+        ),
+        DataCell(
+          Shimmer.fromColors(
+            baseColor: const Color(0xFFE3E7EA),
+            highlightColor: const Color(0xFFF5F5F5),
+            child: Container(
+              width: 80,
+              height: 16,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: Color(0xFFE3E7EA),
+              ),
+            ),
+          ),
+        ),
+      ]),
+      DataRow(cells: [
+        DataCell(
+          Shimmer.fromColors(
+            baseColor: const Color(0xFFE3E7EA),
+            highlightColor: const Color(0xFFF5F5F5),
+            child: Container(
+              width: 80,
+              height: 16,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: Color(0xFFE3E7EA),
+              ),
+            ),
+          ),
+        ),
+        DataCell(
+          Shimmer.fromColors(
+            baseColor: const Color(0xFFE3E7EA),
+            highlightColor: const Color(0xFFF5F5F5),
+            child: Container(
+              width: 80,
+              height: 16,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: Color(0xFFE3E7EA),
+              ),
+            ),
+          ),
+        ),
+        DataCell(
+          Shimmer.fromColors(
+            baseColor: const Color(0xFFE3E7EA),
+            highlightColor: const Color(0xFFF5F5F5),
+            child: Container(
+              width: 80,
+              height: 16,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: Color(0xFFE3E7EA),
+              ),
+            ),
+          ),
+        ),
+        DataCell(
+          Shimmer.fromColors(
+            baseColor: const Color(0xFFE3E7EA),
+            highlightColor: const Color(0xFFF5F5F5),
+            child: Container(
+              width: 80,
+              height: 16,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: Color(0xFFE3E7EA),
+              ),
+            ),
+          ),
+        ),
+        DataCell(
+          Shimmer.fromColors(
+            baseColor: const Color(0xFFE3E7EA),
+            highlightColor: const Color(0xFFF5F5F5),
+            child: Container(
+              width: 80,
+              height: 16,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: Color(0xFFE3E7EA),
+              ),
+            ),
+          ),
+        ),
+        DataCell(
+          Shimmer.fromColors(
+            baseColor: const Color(0xFFE3E7EA),
+            highlightColor: const Color(0xFFF5F5F5),
+            child: Container(
+              width: 80,
+              height: 16,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: Color(0xFFE3E7EA),
+              ),
+            ),
+          ),
+        ),
+        DataCell(
+          Shimmer.fromColors(
+            baseColor: const Color(0xFFE3E7EA),
+            highlightColor: const Color(0xFFF5F5F5),
+            child: Container(
+              width: 80,
+              height: 16,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: Color(0xFFE3E7EA),
+              ),
+            ),
+          ),
+        ),
+      ]),
+      DataRow(cells: [
+        DataCell(
+          Shimmer.fromColors(
+            baseColor: const Color(0xFFE3E7EA),
+            highlightColor: const Color(0xFFF5F5F5),
+            child: Container(
+              width: 80,
+              height: 16,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: Color(0xFFE3E7EA),
+              ),
+            ),
+          ),
+        ),
+        DataCell(
+          Shimmer.fromColors(
+            baseColor: const Color(0xFFE3E7EA),
+            highlightColor: const Color(0xFFF5F5F5),
+            child: Container(
+              width: 80,
+              height: 16,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: Color(0xFFE3E7EA),
+              ),
+            ),
+          ),
+        ),
+        DataCell(
+          Shimmer.fromColors(
+            baseColor: const Color(0xFFE3E7EA),
+            highlightColor: const Color(0xFFF5F5F5),
+            child: Container(
+              width: 80,
+              height: 16,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: Color(0xFFE3E7EA),
+              ),
+            ),
+          ),
+        ),
+        DataCell(
+          Shimmer.fromColors(
+            baseColor: const Color(0xFFE3E7EA),
+            highlightColor: const Color(0xFFF5F5F5),
+            child: Container(
+              width: 80,
+              height: 16,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: Color(0xFFE3E7EA),
+              ),
+            ),
+          ),
+        ),
+        DataCell(
+          Shimmer.fromColors(
+            baseColor: const Color(0xFFE3E7EA),
+            highlightColor: const Color(0xFFF5F5F5),
+            child: Container(
+              width: 80,
+              height: 16,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: Color(0xFFE3E7EA),
+              ),
+            ),
+          ),
+        ),
+        DataCell(
+          Shimmer.fromColors(
+            baseColor: const Color(0xFFE3E7EA),
+            highlightColor: const Color(0xFFF5F5F5),
+            child: Container(
+              width: 80,
+              height: 16,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: Color(0xFFE3E7EA),
+              ),
+            ),
+          ),
+        ),
+        DataCell(
+          Shimmer.fromColors(
+            baseColor: const Color(0xFFE3E7EA),
+            highlightColor: const Color(0xFFF5F5F5),
+            child: Container(
+              width: 80,
+              height: 16,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: Color(0xFFE3E7EA),
+              ),
+            ),
+          ),
+        ),
+      ]),
+    ];
   }
 }

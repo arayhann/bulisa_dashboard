@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:hasura_connect/hasura_connect.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -16,10 +14,11 @@ class Order {
     this.orderName,
     this.orderPhoneNumber,
     this.price,
+    this.tpsId,
   });
 
   int id;
-  String weight;
+  int weight;
   String address;
   String method;
   DateTime createdAt;
@@ -29,6 +28,7 @@ class Order {
   String? orderName;
   String? orderPhoneNumber;
   String? price;
+  int? tpsId;
 
   factory Order.fromJson(Map<String, dynamic> json) => Order(
         id: json["id"],
@@ -44,6 +44,7 @@ class Order {
         orderName: json["order_name"],
         orderPhoneNumber: json["order_phone_number"],
         price: json["price"],
+        tpsId: json["tps_id"],
       );
 }
 
@@ -59,13 +60,14 @@ class OrderNotifier extends StateNotifier<List<Order>> {
     final docQuery = """
 query MyQuery {
   order(limit: 10, offset: 0, order_by: {created_at: desc}) {
-    id
     order_name
     weight
     address
+    id
     method
     created_at
     status
+    tps_id
   }
 }
 """;

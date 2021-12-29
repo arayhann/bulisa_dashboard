@@ -32,7 +32,7 @@ class HomePage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'BuLiSa',
+                      'Bulisa',
                       style: TextStyle(
                         fontSize: 60,
                         fontWeight: FontWeight.bold,
@@ -72,12 +72,12 @@ class HomePage extends StatelessWidget {
                               height: 95,
                               width: 95,
                               decoration: BoxDecoration(
-                                color: const Color(0xFFCCDCFC),
+                                color: const Color(0xFFD6F3D5),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Icon(
                                 Icons.opacity,
-                                color: const Color(0xFF3475F3),
+                                color: const Color(0xFF539B9D),
                                 size: 60,
                               ),
                             ),
@@ -116,12 +116,12 @@ class HomePage extends StatelessWidget {
                               height: 95,
                               width: 95,
                               decoration: BoxDecoration(
-                                color: const Color(0xFFCCDCFC),
+                                color: const Color(0xFFD6F3D5),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Icon(
                                 Icons.people,
-                                color: const Color(0xFF3475F3),
+                                color: const Color(0xFF539B9D),
                                 size: 60,
                               ),
                             ),
@@ -160,12 +160,12 @@ class HomePage extends StatelessWidget {
                               height: 95,
                               width: 95,
                               decoration: BoxDecoration(
-                                color: const Color(0xFFCCDCFC),
+                                color: const Color(0xFFD6F3D5),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Icon(
                                 Icons.money,
-                                color: const Color(0xFF3475F3),
+                                color: const Color(0xFF539B9D),
                                 size: 60,
                               ),
                             ),

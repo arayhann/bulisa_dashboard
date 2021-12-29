@@ -7,6 +7,7 @@ import 'package:bulisa_dashboard/pages/main_page.dart';
 import 'package:bulisa_dashboard/providers/auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class LoginPage extends HookConsumerWidget {
@@ -32,7 +33,6 @@ class LoginPage extends HookConsumerWidget {
         try {
           await ref.read(authProvider.notifier).login(
                 _authData.value,
-                ref.read(hasuraClientProvider).state,
               );
 
           Navigator.pushAndRemoveUntil(
@@ -41,6 +41,10 @@ class LoginPage extends HookConsumerWidget {
               (route) => false);
         } catch (error) {
           _isLoading.value = false;
+          Fluttertoast.showToast(
+            msg: error.toString(),
+            toastLength: Toast.LENGTH_LONG,
+          );
           throw error;
         }
       },
@@ -75,42 +79,53 @@ class LoginPage extends HookConsumerWidget {
                     children: [
                       Expanded(
                         child: Container(
-                          padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF203288),
+                            color: const Color(0xFF539B9D),
                             borderRadius: BorderRadius.only(
                               bottomLeft: Radius.circular(8),
                               topLeft: Radius.circular(8),
                             ),
-                            image: DecorationImage(
-                              image: AssetImage(
-                                'assets/img-logo-bg.png',
-                              ),
-                            ),
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          child: Stack(
                             children: [
-                              const Text(
-                                'Admin\nDashboard',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
+                              Positioned.fill(
+                                child: Image.asset(
+                                  'assets/img-logo-bg.png',
+                                  color: const Color(0xFF4C8F90),
                                 ),
                               ),
-                              const Text(
-                                'Welcome to\nBuLiSa',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 48,
-                                ),
-                              ),
-                              const Text(
-                                '© 2021 Bukan Limbah Biasa',
-                                style: TextStyle(
-                                  color: Colors.white,
+                              Positioned.fill(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(20),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text(
+                                        'Admin\nDashboard',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 18,
+                                        ),
+                                      ),
+                                      const Text(
+                                        'Welcome to\Bulisa',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 48,
+                                        ),
+                                      ),
+                                      const Text(
+                                        '© 2021 Bukan Limbah Biasa',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ],
@@ -135,36 +150,12 @@ class LoginPage extends HookConsumerWidget {
                                   const SizedBox(
                                     height: 20,
                                   ),
-                                  Text('Email'),
+                                  Text('Admin Secret'),
                                   const SizedBox(
                                     height: 7,
                                   ),
                                   BorderedFormField(
-                                    hint: 'Email',
-                                    onSaved: (value) {
-                                      if (value != null) {
-                                        _authData.value['email'] = value;
-                                      }
-                                    },
-                                    validator: (value) {
-                                      if (value == null) {
-                                        return 'Email tidak boleh kosong';
-                                      }
-                                      if (value.isEmpty) {
-                                        return 'Email tidak boleh kosong';
-                                      }
-                                    },
-                                    keyboardType: TextInputType.emailAddress,
-                                  ),
-                                  const SizedBox(
-                                    height: 12,
-                                  ),
-                                  Text('Password'),
-                                  const SizedBox(
-                                    height: 7,
-                                  ),
-                                  BorderedFormField(
-                                    hint: 'Password',
+                                    hint: 'Admin Secret',
                                     obscureText: true,
                                     maxLine: 1,
                                     onSaved: (value) {

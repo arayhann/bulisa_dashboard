@@ -23,29 +23,25 @@ class AuthNotifier extends StateNotifier<String> {
     return true;
   }
 
-  Future<void> login(
-      Map<String, String> authData, HasuraConnect hasuraConnect) async {
-    print(authData);
-
+  Future<void> login(Map<String, String> authData) async {
     String docQuery = """
-mutation MyMutation {
-  login(credentials: {email: "${authData['email']}", password: "${authData['password']}"}) {
-    accessToken
-    id
+query MyQuery {
+  admin {
+    is_admin
   }
 }
 """;
 
-    final response = await hasuraConnect.mutation(docQuery);
-    print(response);
-    final responseData = response['data'];
+    final hasuraConnect = HasuraConnect(
+        'https://bulisa-production.hasura.app/v1/graphql',
+        headers: {'x-hasura-admin-secret': authData['password']!});
 
-    print(responseData['login']['accessToken']);
+    final response = await hasuraConnect.query(docQuery);
 
     final box = Hive.box('bulisa');
-    box.put('token', responseData['login']['accessToken']);
+    box.put('token', authData['password']);
 
-    state = responseData['login']['accessToken'];
+    state = authData['password']!;
   }
 
   Future<void> signUp(

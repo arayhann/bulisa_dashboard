@@ -27,15 +27,16 @@ class FillButton extends StatelessWidget {
           ? Center(child: CircularProgressIndicator())
           : TextButton(
               style: ButtonStyle(
-                shape: MaterialStateProperty.resolveWith(
-                  (states) => RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                  shape: MaterialStateProperty.resolveWith(
+                    (states) => RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
-                ),
-                backgroundColor: MaterialStateProperty.resolveWith(
-                  (states) => color,
-                ),
-              ),
+                  backgroundColor: MaterialStateProperty.resolveWith(
+                    (states) => color,
+                  ),
+                  padding: MaterialStateProperty.resolveWith(
+                      (states) => const EdgeInsets.all(0))),
               onPressed: onTap,
               child: child ??
                   Row(
