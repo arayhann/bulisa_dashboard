@@ -32,16 +32,16 @@ class CardOrderSummary extends HookConsumerWidget {
     );
 
     useEffect(() {
-      Future.delayed(Duration.zero).then((_) {
-        _isLoading.value = true;
-        ref
-            .read(orderProvider.notifier)
-            .getOrderSummary(ref.read(hasuraClientProvider).state)
-            .then((value) {
-          _isLoading.value = false;
-          _orderSummaryData.value = value;
-        });
-      });
+      // Future.delayed(Duration.zero).then((_) {
+      //   _isLoading.value = true;
+      //   ref
+      //       .read(orderProvider.notifier)
+      //       .getOrderSummary(ref.read(hasuraClientProvider).state)
+      //       .then((value) {
+      //     _isLoading.value = false;
+      //     _orderSummaryData.value = value;
+      //   });
+      // });
 
       return;
     }, []);

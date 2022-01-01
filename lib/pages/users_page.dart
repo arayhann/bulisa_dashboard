@@ -58,28 +58,29 @@ class UsersPage extends HookConsumerWidget {
                 elevation: 5,
                 shadowColor: Colors.grey.withOpacity(0.2),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(20.0),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          SizedBox(
-                            width: 138,
-                            child: FillButton(
-                              onTap: () {},
-                              text: 'Tambah',
-                              leading: Icon(
-                                Icons.add_box_rounded,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
                           SizedBox(
                             width: 311,
                             child: BorderedFormField(
-                              prefixIcon: Icon(Icons.search_rounded),
-                              hint: 'Cari pesanan disini...',
+                              hint: 'Cari nama user disini...',
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 12,
+                          ),
+                          SizedBox(
+                            width: 50,
+                            child: FillButton(
+                              onTap: () {},
+                              child: Icon(
+                                Icons.search,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ],

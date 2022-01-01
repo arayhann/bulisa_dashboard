@@ -30,16 +30,16 @@ class HomePage extends HookConsumerWidget {
         []);
 
     useEffect(() {
-      Future.delayed(Duration.zero).then((_) {
-        _isLoading.value = true;
-        ref
-            .read(orderProvider.notifier)
-            .getOrderPrice(ref.read(hasuraClientProvider).state)
-            .then((value) {
-          _isLoading.value = false;
-          _price.value = value;
-        });
-      });
+      // Future.delayed(Duration.zero).then((_) {
+      //   _isLoading.value = true;
+      //   ref
+      //       .read(orderProvider.notifier)
+      //       .getOrderPrice(ref.read(hasuraClientProvider).state)
+      //       .then((value) {
+      //     _isLoading.value = false;
+      //     _price.value = value;
+      //   });
+      // });
 
       return;
     }, []);

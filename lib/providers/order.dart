@@ -55,11 +55,15 @@ final orderProvider = StateNotifierProvider<OrderNotifier, List<Order>>((ref) {
 class OrderNotifier extends StateNotifier<List<Order>> {
   OrderNotifier() : super([]);
 
-  Future<void> getOrders(
-      int limit, int offset, HasuraConnect hasuraConnect) async {
+  List<Order> get orders {
+    return [...state];
+  }
+
+  Future<void> getOrders(int limit, int offset, HasuraConnect hasuraConnect,
+      String filterByName) async {
     final docQuery = """
 query MyQuery {
-  order(limit: 10, offset: 0, order_by: {created_at: desc}) {
+  order(limit: $limit, offset: ${offset * limit}, order_by: {created_at: desc} ${filterByName.isNotEmpty ? ', where: {order_name: {_eq: "$filterByName"}}' : ''}) {
     order_name
     weight
     address
@@ -77,7 +81,34 @@ query MyQuery {
 
     final List<Order> loadedData = [];
 
-    print(responseData);
+    (responseData as List<dynamic>).forEach((order) {
+      loadedData.add(Order.fromJson(order));
+    });
+
+    state = loadedData;
+  }
+
+  Future<void> getMoreOrders(int limit, int offset, HasuraConnect hasuraConnect,
+      String filterByName) async {
+    final docQuery = """
+query MyQuery {
+  order(limit: $limit, offset: ${offset * limit}, order_by: {created_at: desc} ${filterByName.isNotEmpty ? ', where: {order_name: {_eq: "$filterByName"}}' : ''}) {
+    order_name
+    weight
+    address
+    id
+    method
+    created_at
+    status
+    tps_id
+  }
+}
+""";
+
+    final response = await hasuraConnect.query(docQuery);
+    final responseData = response['data']['order'];
+
+    final List<Order> loadedData = state;
 
     (responseData as List<dynamic>).forEach((order) {
       loadedData.add(Order.fromJson(order));
