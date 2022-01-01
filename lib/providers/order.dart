@@ -201,4 +201,61 @@ mutation MyMutation {
 
     state = [...currentOrder];
   }
+
+  Future<Map<String, int>> getOrderSummary(HasuraConnect hasuraConnect) async {
+    final docQuery = """
+query MyQuery {
+  total_user: user_data_aggregate {
+    aggregate {
+      count
+    }
+  }
+  total_weight: order_aggregate(where: {status: {_eq: "Selesai"}}) {
+    aggregate {
+      sum {
+        weight
+      }
+    }
+  }
+}
+""";
+
+    final response = await hasuraConnect.query(docQuery);
+
+    final responseData = response['data'];
+
+    return {
+      'total_user': responseData['total_user']['aggregate']['count'],
+      'total_weight': responseData['total_weight']['aggregate']['sum']
+          ['weight'],
+    };
+  }
+
+  Future<int> getOrderPrice(HasuraConnect hasuraConnect) async {
+    final docQuery = """
+query MyQuery {
+  user_data(limit: 1) {
+    kg_price
+  }
+}
+""";
+
+    final response = await hasuraConnect.query(docQuery);
+
+    final responseData = response['data'];
+
+    return responseData['user_data'][0]['kg_price'];
+  }
+
+  Future<void> editOrderPrice(HasuraConnect hasuraConnect, int newPrice) async {
+    final doc = """
+mutation MyMutation {
+  update_user_data(where: {}, _set: {kg_price: $newPrice}) {
+    affected_rows
+  }
+}
+""";
+
+    final response = await hasuraConnect.mutation(doc);
+  }
 }
