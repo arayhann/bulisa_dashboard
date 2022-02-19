@@ -37,16 +37,7 @@ class OrdersPage extends HookConsumerWidget {
                 return;
               }
 
-              _orderData.value = ref.read(orderProvider);
-            },
-        []);
-
-    final _filterOrderPopUp = useMemoized(
-        () => () {
-              showDialog(
-                context: context,
-                builder: (context) => FilterOrderPopUP(),
-              );
+              _orderData.value = ref.read(orderProvider.notifier).orders;
             },
         []);
 
@@ -65,7 +56,7 @@ class OrdersPage extends HookConsumerWidget {
               .then((_) {
             _isLoadingNewData.value = false;
 
-            final loadedData = ref.read(orderProvider);
+            final loadedData = ref.read(orderProvider.notifier).orders;
 
             if (loadedData.length == _orderData.value.length) {
               _isLoadAllData.value = true;
@@ -146,6 +137,7 @@ class OrdersPage extends HookConsumerWidget {
                             child: FillButton(
                               onTap: () {
                                 _activePage.value = 0;
+                                _isLoadAllData.value = false;
                                 _filterByName.value = _searchController.text;
                               },
                               child: Icon(

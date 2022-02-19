@@ -1,7 +1,9 @@
 import 'package:bulisa_dashboard/components/bordered_text_field.dart';
 import 'package:bulisa_dashboard/components/fill_button.dart';
 import 'package:bulisa_dashboard/components/pagination.dart';
+import 'package:bulisa_dashboard/components/tps_detail_pop_up.dart';
 import 'package:bulisa_dashboard/components/user_detail_pop_up.dart';
+import 'package:bulisa_dashboard/providers/tps.dart';
 import 'package:bulisa_dashboard/providers/user_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -11,15 +13,15 @@ import 'package:shimmer/shimmer.dart';
 
 import '../hasura_config.dart';
 
-class UsersPage extends HookConsumerWidget {
-  const UsersPage({Key? key}) : super(key: key);
+class TpsPage extends HookConsumerWidget {
+  const TpsPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final _scrollController = useScrollController();
     final _searchController = useTextEditingController();
 
-    final _usersData = useState<List<UserData>>([]);
+    final _usersData = useState<List<Tps>>([]);
     final _filterByName = useState('');
 
     final _isLoading = useState(true);
@@ -27,12 +29,18 @@ class UsersPage extends HookConsumerWidget {
     final _isLoadAllData = useState(false);
     final _activePage = useState(0);
 
-    final _showDetailUser = useMemoized(
-        () => (UserData user) {
-              showDialog(
+    final _showDetailTps = useMemoized(
+        () => (Tps tps) async {
+              final isEdit = await showDialog(
                 context: context,
-                builder: (context) => DetailUserPopUP(user.id),
+                builder: (context) => TpsDetailPopUP(tps),
               );
+
+              if (isEdit == null) {
+                return;
+              }
+
+              _usersData.value = ref.read(tpsDataProvider.notifier).tpsData;
             },
         []);
 
@@ -41,8 +49,8 @@ class UsersPage extends HookConsumerWidget {
         if (_activePage.value != 0) {
           _isLoadingNewData.value = true;
           ref
-              .read(userDataProvider.notifier)
-              .getMoreUserData(
+              .read(tpsDataProvider.notifier)
+              .getMoreTpsData(
                 20,
                 _activePage.value,
                 ref.read(hasuraClientProvider).state,
@@ -51,7 +59,7 @@ class UsersPage extends HookConsumerWidget {
               .then((_) {
             _isLoadingNewData.value = false;
 
-            final loadedData = ref.read(userDataProvider.notifier).users;
+            final loadedData = ref.read(tpsDataProvider.notifier).tpsData;
 
             if (loadedData.length == _usersData.value.length) {
               _isLoadAllData.value = true;
@@ -69,12 +77,12 @@ class UsersPage extends HookConsumerWidget {
       Future.delayed(Duration.zero).then((_) {
         _isLoading.value = true;
         ref
-            .read(userDataProvider.notifier)
-            .getUserData(20, 0, ref.read(hasuraClientProvider).state,
+            .read(tpsDataProvider.notifier)
+            .getTpsData(20, 0, ref.read(hasuraClientProvider).state,
                 _filterByName.value)
             .then((_) {
           _isLoading.value = false;
-          _usersData.value = ref.read(userDataProvider.notifier).users;
+          _usersData.value = ref.read(tpsDataProvider.notifier).tpsData;
         });
       });
 
@@ -114,7 +122,7 @@ class UsersPage extends HookConsumerWidget {
                           SizedBox(
                             width: 311,
                             child: BorderedFormField(
-                              hint: 'Cari nama user disini...',
+                              hint: 'Cari nomor TPS disini...',
                               textEditingController: _searchController,
                             ),
                           ),
@@ -160,22 +168,19 @@ class UsersPage extends HookConsumerWidget {
                                       Color(0xFF539B9D).withOpacity(0.05)),
                               columns: [
                                 DataColumn(
-                                  label: Text('Id'),
+                                  label: Text('Nomor'),
                                 ),
                                 DataColumn(
-                                  label: Text('Nama'),
-                                ),
-                                DataColumn(
-                                  label: Text('Email'),
+                                  label: Text('Nama Pemilik'),
                                 ),
                                 DataColumn(
                                   label: Text('No. Hp'),
                                 ),
                                 DataColumn(
-                                  label: Text('Alamat'),
+                                  label: Text('Status'),
                                 ),
                                 DataColumn(
-                                  label: Text('Tgl. Masuk'),
+                                  label: Text('Alamat'),
                                 ),
                                 DataColumn(
                                   label: Text('Aksi'),
@@ -185,50 +190,59 @@ class UsersPage extends HookConsumerWidget {
                                   ? tablePlaceHolder()
                                   : [
                                       ..._usersData.value
-                                          .map((user) => DataRow(cells: [
+                                          .map((tps) => DataRow(cells: [
                                                 DataCell(
                                                   Text(
-                                                    '${user.id}',
+                                                    '${tps.id}',
                                                     overflow:
                                                         TextOverflow.ellipsis,
                                                   ),
                                                 ),
                                                 DataCell(
                                                   Text(
-                                                    '${user.name}',
+                                                    '${tps.tpsOwner}',
                                                     overflow:
                                                         TextOverflow.ellipsis,
                                                   ),
                                                 ),
                                                 DataCell(
                                                   Text(
-                                                    '${user.email}',
+                                                    '${tps.tpsPhoneNumber ?? '-'}',
                                                     overflow:
                                                         TextOverflow.ellipsis,
                                                   ),
                                                 ),
                                                 DataCell(
-                                                  Text(
-                                                    '${user.phoneNumber}',
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  ),
-                                                ),
-                                                DataCell(
-                                                  SizedBox(
-                                                    width: 300,
+                                                  Container(
+                                                    decoration: BoxDecoration(
+                                                      color: tps.status
+                                                          ? Color(0xFF539B9D)
+                                                          : Colors.grey,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              4),
+                                                    ),
+                                                    padding: const EdgeInsets
+                                                            .symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 4),
                                                     child: Text(
-                                                      '${user.address}',
+                                                      '${tps.status ? 'Aktif' : 'Tidak Aktif'}',
+                                                      style: TextStyle(
+                                                          color: Colors.white),
                                                       overflow:
                                                           TextOverflow.ellipsis,
                                                     ),
                                                   ),
                                                 ),
                                                 DataCell(
-                                                  Text(
-                                                    '${DateFormat('dd MMMM yyyy').format(user.createdAt)}',
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
+                                                  SizedBox(
+                                                    width: 300,
+                                                    child: Text(
+                                                      '${tps.tpsAddress}',
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
                                                   ),
                                                 ),
                                                 DataCell(
@@ -244,7 +258,7 @@ class UsersPage extends HookConsumerWidget {
                                                       color: const Color(
                                                           0x26F8A328),
                                                       onTap: () {
-                                                        _showDetailUser(user);
+                                                        _showDetailTps(tps);
                                                       },
                                                     ),
                                                   ),
@@ -261,23 +275,6 @@ class UsersPage extends HookConsumerWidget {
                                                   const Color(0xFFF5F5F5),
                                               child: Container(
                                                 width: 16,
-                                                height: 16,
-                                                decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(4),
-                                                  color: Color(0xFFE3E7EA),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          DataCell(
-                                            Shimmer.fromColors(
-                                              baseColor:
-                                                  const Color(0xFFE3E7EA),
-                                              highlightColor:
-                                                  const Color(0xFFF5F5F5),
-                                              child: Container(
-                                                width: 80,
                                                 height: 16,
                                                 decoration: BoxDecoration(
                                                   borderRadius:
@@ -555,20 +552,6 @@ class UsersPage extends HookConsumerWidget {
             ),
           ),
         ),
-        DataCell(
-          Shimmer.fromColors(
-            baseColor: const Color(0xFFE3E7EA),
-            highlightColor: const Color(0xFFF5F5F5),
-            child: Container(
-              width: 80,
-              height: 16,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(4),
-                color: Color(0xFFE3E7EA),
-              ),
-            ),
-          ),
-        ),
       ]),
       DataRow(cells: [
         DataCell(
@@ -655,36 +638,8 @@ class UsersPage extends HookConsumerWidget {
             ),
           ),
         ),
-        DataCell(
-          Shimmer.fromColors(
-            baseColor: const Color(0xFFE3E7EA),
-            highlightColor: const Color(0xFFF5F5F5),
-            child: Container(
-              width: 80,
-              height: 16,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(4),
-                color: Color(0xFFE3E7EA),
-              ),
-            ),
-          ),
-        ),
       ]),
       DataRow(cells: [
-        DataCell(
-          Shimmer.fromColors(
-            baseColor: const Color(0xFFE3E7EA),
-            highlightColor: const Color(0xFFF5F5F5),
-            child: Container(
-              width: 80,
-              height: 16,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(4),
-                color: Color(0xFFE3E7EA),
-              ),
-            ),
-          ),
-        ),
         DataCell(
           Shimmer.fromColors(
             baseColor: const Color(0xFFE3E7EA),

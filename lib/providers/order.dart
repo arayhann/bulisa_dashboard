@@ -63,7 +63,7 @@ class OrderNotifier extends StateNotifier<List<Order>> {
       String filterByName) async {
     final docQuery = """
 query MyQuery {
-  order(limit: $limit, offset: ${offset * limit}, order_by: {created_at: desc} ${filterByName.isNotEmpty ? ', where: {order_name: {_eq: "$filterByName"}}' : ''}) {
+  order(limit: $limit, offset: ${offset * limit}, order_by: {created_at: desc} ${filterByName.isNotEmpty ? ', where: {order_name: {_ilike: "$filterByName"}}' : ''}) {
     order_name
     weight
     address
@@ -92,7 +92,7 @@ query MyQuery {
       String filterByName) async {
     final docQuery = """
 query MyQuery {
-  order(limit: $limit, offset: ${offset * limit}, order_by: {created_at: desc} ${filterByName.isNotEmpty ? ', where: {order_name: {_eq: "$filterByName"}}' : ''}) {
+  order(limit: $limit, offset: ${offset * limit}, order_by: {created_at: desc} ${filterByName.isNotEmpty ? ', where: {order_name: {_ilike: "$filterByName"}}' : ''}) {
     order_name
     weight
     address

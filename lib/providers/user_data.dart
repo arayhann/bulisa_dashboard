@@ -44,11 +44,15 @@ final userDataProvider =
 class UserDataNotifier extends StateNotifier<List<UserData>> {
   UserDataNotifier() : super([]);
 
-  Future<void> getUserData(
-      int limit, int offset, HasuraConnect hasuraConnect) async {
+  List<UserData> get users {
+    return [...state];
+  }
+
+  Future<void> getUserData(int limit, int offset, HasuraConnect hasuraConnect,
+      String filterByName) async {
     final docQuery = """
 query MyQuery {
-  user_data(order_by: {created_at: asc}, limit: $limit, offset: $offset) {
+  user_data(order_by: {created_at: asc}, limit: $limit, offset: ${offset * limit} ${filterByName.isNotEmpty ? ', where: {name: {_ilike: "$filterByName"}}' : ''}) {
     id
     name
     email
@@ -64,7 +68,32 @@ query MyQuery {
 
     final List<UserData> loadedData = [];
 
-    print(responseData);
+    (responseData as List<dynamic>).forEach((order) {
+      loadedData.add(UserData.fromJson(order));
+    });
+
+    state = loadedData;
+  }
+
+  Future<void> getMoreUserData(int limit, int offset,
+      HasuraConnect hasuraConnect, String filterByName) async {
+    final docQuery = """
+query MyQuery {
+  user_data(order_by: {created_at: asc}, limit: $limit, offset: ${offset * limit} ${filterByName.isNotEmpty ? ', where: {name: {_ilike: "$filterByName"}}' : ''}) {
+    id
+    name
+    email
+    phone_number
+    address
+    created_at
+  }
+}
+""";
+
+    final response = await hasuraConnect.query(docQuery);
+    final responseData = response['data']['user_data'];
+
+    final List<UserData> loadedData = state;
 
     (responseData as List<dynamic>).forEach((order) {
       loadedData.add(UserData.fromJson(order));
